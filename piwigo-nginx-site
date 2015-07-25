@@ -1,0 +1,53 @@
+server {
+	listen 127.0.0.1:80;
+	server_name piwigo.localhost;
+
+	root /var/www/piwigo;
+	index index.html index.htm index.php;
+
+	access_log /var/log/nginx/piwigo.access.log;
+	error_log /var/log/nginx/piwigo.error.log ;
+
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+	location ~ \.php$ {
+		try_files  $uri =404;
+		fastcgi_pass unix:/var/run/php5-fpm.sock;
+		fastcgi_index  index.php;
+		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		fastcgi_param  SCRIPT_NAME  $fastcgi_script_name;
+		include fastcgi_params;
+	}
+
+	# ============== actual Auth conf starts here =====================
+	location = /auth.php {
+		fastcgi_pass unix:/var/run/php5-fpm.sock;
+		fastcgi_index  auth.php;
+		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		fastcgi_param  SCRIPT_NAME  $fastcgi_script_name;
+		include fastcgi_params;
+	}
+
+
+	location /upload {
+		auth_request /auth.php;
+		auth_request_set $auth_redirect '/default.png';
+			error_page 401 = /auth_401;
+	}
+
+	location /_data/i {
+		auth_request /auth.php;
+		auth_request_set $auth_redirect '/default.png';
+			error_page 401 = /auth_401;
+	}
+
+	location = /auth_401 {
+		if ($auth_redirect) {
+			return 302 $auth_redirect;
+		}
+		return 401;
+	}
+}
