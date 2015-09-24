@@ -19,7 +19,7 @@
 // | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, |
 // | USA.                                                                  |
 // +-----------------------------------------------------------------------+
-
+ini_set("log_errors", 1);
 define('PHPWG_ROOT_PATH','./');
 session_cache_limiter('public');
 include_once(PHPWG_ROOT_PATH.'include/common.inc.php');
@@ -28,6 +28,7 @@ include_once(PHPWG_ROOT_PATH.'include/common.inc.php');
 check_status(ACCESS_GUEST);
 
 function do_error( $code, $str ) {
+  error_log($code . ' '.  $str . ' ' . filter_input(INPUT_SERVER, 'REMOTE_ADDR'));
   set_status_header( $code );
   echo $str ;
   exit();
@@ -35,7 +36,7 @@ function do_error( $code, $str ) {
 
 function get_file_from_path($path) {
   $match = [];
-  \preg_match('/\d{4}\\/\d{2}\\/\d{2}\\/(\d{14}-[0-9a-f]{8})/', $path, $match);
+  \preg_match('/\d{4}\\/\d{2}\\/\d{2}\\/(pwg_representative\\/)?(\d{14}-[0-9a-f]{8})/', $path, $match);
   return isset($match[1]) ? $match[1] : null;
 }
 
