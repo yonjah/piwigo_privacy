@@ -36,7 +36,7 @@ function do_error( $code, $str ) {
 
 function get_file_from_path($path) {
   $match = [];
-  \preg_match('/\d{4}\\/\d{2}\\/\d{2}\\/(pwg_representative\\/)?(\d{14}-[0-9a-f]{8})/', $path, $match);
+  preg_match('/\d{4}\/\d{2}\/\d{2}\/(pwg_representative\/)?(\d{14}-[0-9a-f]{8})/', $path, $match);
   return isset($match[1]) ? $match[1] : null;
 }
 
