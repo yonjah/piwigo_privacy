@@ -40,6 +40,11 @@ server {
 
 	}
 
+	location /galleries {
+		internal;
+
+	}
+
 	location /_data {
 		internal;
 	}

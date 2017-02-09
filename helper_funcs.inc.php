@@ -228,7 +228,6 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 		$base_file = './' . ltrim($base_file, '/');
 	}
 	//file is a derivative of original image
-	error_log($base_file);
 	if (strpos($req_path, $base_file) === 0) {
 		return pwg_privacy_generate_derivative($element_info, $req_path);
 	}
@@ -236,7 +235,8 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 	$base_file = dirname($base_file).'/pwg_representative/'.basename($base_file);
 	//file is a representative
 	if (strpos($req_path, $base_file) === 0) {
-		return $req_path;
+		$element_info['path'] = get_filename_wo_extension(dirname($path).'/pwg_representative/'.basename($path)) . '.'. $element_info['representative_ext'];
+		return pwg_privacy_generate_derivative($element_info, $req_path);
 	}
 
 	return pwg_privacy_error("Could not validate path ($req_path) actually belong to image ($img_id)");
@@ -249,6 +249,7 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
  */
 function pwg_privacy_generate_derivative ($element_info, $req_path) {
 	global $conf;
+	global $prefixeTable;
 
 	$derivative = pwg_privacy_parse_derivative($req_path);
 	if (!$derivative) {
@@ -265,10 +266,11 @@ function pwg_privacy_generate_derivative ($element_info, $req_path) {
 	$need_generate = false;
 	$src_mtime = @filemtime($src_path);
 	if (!$src_mtime) {
-		return pwg_privacy_error('Could not find src image for derivative ' . $req_path);
+		return pwg_privacy_error('Could not find src image for derivative ' . $src_path);
 	}
 	$type = $derivative[1];
 	$params = $derivative[2];
+
 	$derivative_mtime = @filemtime($derivative_path);
 	if ($derivative_mtime !== false && $derivative_mtime >= $src_mtime && $derivative_mtime >= $params->last_mod_time) {
 		return $derivative_rel_path;
