@@ -191,7 +191,7 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 
 	//file id does not exist or user has no rights to access it
 	if ( empty($element_info) || !$element_info['path'] ) {
-		return pwg_privacy_error('User has no access to image ' + $image_id);
+		return pwg_privacy_error('User has no access to image ' . $image_id);
 	}
 
 	if ( is_admin() ) {
@@ -214,7 +214,7 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 		if ( $deriv->same_as_source() ) {
 			return $path;
 		}
-		return pwg_privacy_error('User has no high res access ' + $image_id);
+		return pwg_privacy_error('User has no high res access ' . $image_id);
 	}
 
 	//file is a representative
@@ -253,7 +253,7 @@ function pwg_privacy_generate_derivative ($element_info, $req_path) {
 
 	$derivative = pwg_privacy_parse_derivative($req_path);
 	if (!$derivative) {
-		return pwg_privacy_error('Could not parse derivative ' + $req_path);
+		return pwg_privacy_error('Could not parse derivative ' . $req_path);
 	}
 
 	$src_rel_path = $element_info['path'];
@@ -485,11 +485,17 @@ function pwg_privacy_url_to_size($s) {
 }
 
 
-function pwg_privacy_sanitize_path($path) {
-	if ( preg_match('/\s|\.\./', $path) ) {
-		return pwg_privacy_error('Path cannot contain .. or white spaces ' + $path);
-	}
+function pwg_privacy_sanitize_path($base, $path) {
 	$path = str_replace('//', '/', $path);
 	$path = str_replace('/./', '/', $path);
-	return $path;
+	$path = ltrim($path, '/');
+	$name = basename($path);
+	$path = realpath(dirname($base.$path));
+	$base = realpath($base) . '/';
+
+	if (strpos($path, $base) !== 0) {
+		return pwg_privacy_error('Requested path is outside piwigo base ' . $path);
+	}
+
+	return substr($path, strlen($base)).'/'.$name;
 }

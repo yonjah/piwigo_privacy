@@ -32,28 +32,31 @@ global $conf;
 $conf['piwigo_privacy_debug'] = 1;
 
 if (isset($conf['piwigo_privacy_redirect_header'])) {
-	$full_path = pwg_privacy_sanitize_path(filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL));
+	$full_path = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL);
 	if (!$full_path) {
 		pwg_privacy_reject_access('Could not get url path');
 	}
 	list($img_id, $req_path) = explode('/', ltrim($full_path, '/'), 2);
-	$req_path = './' . $req_path;
 	if (!is_numeric($img_id) && $img_id == (int)$img_id ) {
 		pwg_privacy_reject_access("Image id '$img_id' is not numeric $full_path");
 	}
 
 } else {
 	$img_id = filter_input(INPUT_GET, 'img_id', FILTER_VALIDATE_INT);
-	$req_path = pwg_privacy_sanitize_path(filter_input(INPUT_GET, 'file', FILTER_SANITIZE_URL));
-	if (strpos($req_path, './') !== 0) {
-		$req_path = './' . ltrim($req_path, '/');
-	}
+	$req_path = filter_input(INPUT_GET, 'file', FILTER_SANITIZE_URL);
 }
 
 //reject access if no id or path
 if ( !$img_id || !$req_path ) {
 	pwg_privacy_reject_access('Could not find image id or path');
 }
+
+$req_path = pwg_privacy_sanitize_path(PHPWG_ROOT_PATH, $req_path);
+if (!$req_path) {
+	pwg_privacy_reject_access('Could not sanitize path');
+}
+
+$req_path = './' . $req_path;
 
 $path = pwg_privacy_verify_access($img_id, $req_path);
 
