@@ -12,7 +12,7 @@ It has two modes of operations
 You should also disable `i.php` script since it sends files back to the client without validating the permissions.
 You can look at [piwigo-nginx-site](piwigo-nginx-site) which does all of that.
 
-## Install -
+## Install
 Clone the repository to your in your Piwigo plugins folder (should create the path `plugins/piwigo_privacy`)
 in Piwigo config file (`local/config/config.inc.php`) set `derivative_url_style` config to `1` -
 $conf['derivative_url_style']=1;
