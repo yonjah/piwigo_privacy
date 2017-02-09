@@ -191,7 +191,7 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 
 	//file id does not exist or user has no rights to access it
 	if ( empty($element_info) || !$element_info['path'] ) {
-		return pwg_privacy_error('User has no access to image ' . $image_id);
+		return pwg_privacy_error('User has no access to image ' . $img_id);
 	}
 
 	if ( is_admin() ) {
@@ -214,7 +214,7 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 		if ( $deriv->same_as_source() ) {
 			return $path;
 		}
-		return pwg_privacy_error('User has no high res access ' . $image_id);
+		return pwg_privacy_error('User has no high res access ' . $img_id);
 	}
 
 	//file is a representative
