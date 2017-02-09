@@ -1,62 +1,35 @@
-# piwigio-privacy
-A small script and nginx configuration to increase the privacy of piwigo gallery
+# piwigio_privacy
+A plugin to increase the privacy of Piwigo gallery
 
-This repository contains a small script that will validate users before allowing
-access to static files, so using it will actually protect your files from access by
-anyone who is not allowed to view them.
-unlike `action.php` this script will not serve the files back to the client
-and instead use nginx for serving the file and works both on the original and derivatives.
+Piwigo privacy will validate users before allowing
+access to Piwigo images and other uploaded files.
 
-_For more information check out my blog post about [Securing Private Piwigo Albums](https://ca.non.co.il/index.php/securing-private-piwigo-albums/)_
+It has two modes of operations
+- Naive - all images are directed to `get.php` where access is analyzed derivative are created and files are served
+- Advanced - Using a custom web server configuration (see [piwigo-nginx-site](piwigo-nginx-site) for NGINX sample) `get.php` will validate files and create derivative but will pass the actual serving of files to the web server.
 
-## file description
-`auth.php` the auth validation script
-`piwigo-nginx-site` file contains very basic nginx site configuration with auth_request redirects to the auth.php script
-`default.png` a basic image that will be served instead of forbidden images
+*Notice* that with both modes you need to make sure your static file folders are blocked from public web access 
+You should also disable `i.php` script since it sends files back to the client without validating the permissions.
+You can look at [piwigo-nginx-site](piwigo-nginx-site) which does all of that.
 
-## Install
-Since default nginx build does not enable the `auth_request` feature
-the hardest thing in the installation process will be to compile [nginx source](http://nginx.org/en/download.html)
-The actual process will be different depending on your distro and installed
-modules but here is the flags I used -
+## Install -
+Clone the repository to your in your Piwigo plugins folder (should create the path `plugins/piwigo_privacy`)
+in Piwigo config file (`local/config/config.inc.php`) set `derivative_url_style` config to `1` -
+$conf['derivative_url_style']=1;
 
-```shell
-./configure \
-	--user=www-data                       \
-	--group=www-data                      \
-	--prefix=/etc/nginx                   \
-	--sbin-path=/usr/sbin/nginx           \
-	--conf-path=/etc/nginx/nginx.conf     \
-	--pid-path=/run/nginx.pid             \
-	--lock-path=/run/nginx.lock           \
-	--error-log-path=/var/log/nginx/error.log \
-	--http-log-path=/var/log/nginx/access.log \
-	--with-http_gzip_static_module        \
-	--with-http_stub_status_module        \
-	--with-http_ssl_module                \
-	--with-pcre                           \
-	--with-file-aio                       \
-	--with-http_realip_module             \
-	--without-http_scgi_module            \
-	--without-http_uwsgi_module           \
-	--with-http_auth_request_module
-```
+Go to Piwigo admin panel and under plugins management activate `piwigo_privacy`
 
-You might need to install some libs (I was missing libssl-dev for openssl and libpcre3-dev for PCRE)
-but if all goes well you can compile and install
-```shell
-make
-sudo make install
-```
+If you want to use *advance mode* with *NGINX* also set the config -
+$conf['piwigo_privacy_redirect_header'] = 'X-Accel-Redirect';
 
-copy `auth.php` and  `default.png` to the root of your `piwigo` folder
-edit your nginx site file (usually under /etc/nginx/sites-available) to [auth_request](http://nginx.org/en/docs/http/ngx_http_auth_request_module.html)
-requests to /upload and derivatives file locations, you can use `piwigo-nginx-site` file as is but you'll probably want
-your actual nginx conf to be a bit more complex than that
+Using a different server that supports `X-send-files` might be possible by settings the headers accordingly but this plugin was only tested with NGINX. if you get it to work with other servers a pull request with a sample configuration would be appreciated.
 
-restart nginx and you should be good to go
+## Disclaimer
+This plugin is a lot more complex than my initial implementation.
 
-## Why this is not a plugin
-I was trying to see how to achieve the same result as a plugin but that seems a bit useless since any way
-I'll need to have a script that nginx can directly access for `auth_request` and since any way we need to change
-nginx configuration I didn't see much point in having this as a plugin.
+I can assume many performance improvements can be made since performance wasn't one of my main goals in implementing it.
+
+Though I hope it improves the privacy of you Piwigo install you should be aware that Piwigo security implementations are very naive and proper Documentation is scares, I tried to do my best so this plugin won't introduce any new security issues and hopefully help to mitigate any existing ones but it still might be possible to bypass this plugin and get access to images (With my previous implementation for example I was completely unaware that Piwigo built in `i.php` does not validate user permissions when serving images).
+
+
+_For more information about the idea behind this plugin and the previous implementation check out my blog post about [Securing Private Piwigo Albums](https://ca.non.co.il/index.php/securing-private-piwigo-albums/)_
