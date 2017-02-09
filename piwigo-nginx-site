@@ -15,12 +15,12 @@ server {
 
 	# This location is not part of the plugin but will probably help mitigate security issues
 	location ~  \.inc\.php$ {
-		return 403;
+		deny all;
 	}
 
 	# This location is not part of the plugin but will probably help mitigate security issues
-	location ~  ^/(language|include|themes|admin/thems)/.*\.php$ {
-		return 403;
+	location ~  ^/(include|install|local|tools|admin/include|admin/themes|plugins|upload|themes|galleries|_data|doc|language|template-extension)/.*\.php$ {
+		deny all;
 	}
 
 	location ~ \.php$ {
@@ -42,7 +42,7 @@ server {
 	}
 
 	location /i.php {
-		return 403;
+		deny all;
 	}
 
 	location /upload {
