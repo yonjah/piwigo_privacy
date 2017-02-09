@@ -15,12 +15,16 @@ You can look at [piwigo-nginx-site](piwigo-nginx-site) which does all of that.
 ## Install
 Clone the repository to your in your Piwigo plugins folder (should create the path `plugins/piwigo_privacy`)
 in Piwigo config file (`local/config/config.inc.php`) set `derivative_url_style` config to `1` -
+````php
 $conf['derivative_url_style']=1;
+```
 
 Go to Piwigo admin panel and under plugins management activate `piwigo_privacy`
 
 If you want to use *advance mode* with *NGINX* also set the config -
+```php
 $conf['piwigo_privacy_redirect_header'] = 'X-Accel-Redirect';
+```
 
 Using a different server that supports `X-send-files` might be possible by settings the headers accordingly but this plugin was only tested with NGINX. if you get it to work with other servers a pull request with a sample configuration would be appreciated.
 
