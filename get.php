@@ -29,7 +29,6 @@ include_once('./helper_funcs.inc.php');
 defined('PWG_DERIVATIVE_DIR') or define('PWG_DERIVATIVE_DIR', $conf['data_location'].'i/');
 
 global $conf;
-$conf['piwigo_privacy_debug'] = 1;
 
 if (isset($conf['piwigo_privacy_redirect_header'])) {
 	$full_path = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL);
