@@ -13,6 +13,16 @@ server {
 		try_files $uri $uri/ =404;
 	}
 
+	# This location is not part of the plugin but will probably help mitigate security issues
+	location ~  \.inc\.php$ {
+		return 403;
+	}
+
+	# This location is not part of the plugin but will probably help mitigate security issues
+	location ~  ^/(language|include|themes|admin/thems)/.*\.php$ {
+		return 403;
+	}
+
 	location ~ \.php$ {
 		try_files  $uri =404;
 		fastcgi_pass unix:/run/php-fpm/www.sock;
@@ -32,7 +42,7 @@ server {
 	}
 
 	location /i.php {
-		return 401;
+		return 403;
 	}
 
 	location /upload {
