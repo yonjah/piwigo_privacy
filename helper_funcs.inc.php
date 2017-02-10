@@ -81,6 +81,8 @@ function pwg_privacy_serve_file ($path) {
 
 	if (isset($conf['piwigo_privacy_redirect_header'])) {
 		header('Content-type: '.$mime);
+		$path =  str_replace('/./', '/', '/' . $path);
+
 		header("{$conf['piwigo_privacy_redirect_header']}: /{$path}");
 		return;
 	}

@@ -13,16 +13,21 @@ server {
 		try_files $uri $uri/ =404;
 	}
 
-
-	# This location is not part of the plugin but will probably help mitigate security issues
+	#### Extra Security blocks not necessary for the plugin, just some added security ####
 	location ~  \.inc\.php$ {
 		deny all;
 	}
 
-	# This location is not part of the plugin but will probably help mitigate security issues
 	location ~  ^/(include|install|local|tools|admin/include|admin/themes|plugins|upload|themes|galleries|_data|doc|language|template-extension)/.*\.php$ {
 		deny all;
 	}
+
+    location ~ /\. {
+        access_log off;
+        log_not_found off;
+        deny all;
+    }
+    #### End of extra security block ####
 
 	location ~ \.php$ {
 		try_files  $uri =404;
@@ -43,7 +48,7 @@ server {
 	}
 
 	# explicitly allow piwigo_privacy get.php you don't need this rule in advance mode or if you are not
-	# blocking all direct access to files in plugins
+	# using the extra security blocks which block all direct access to php files in plugins
 	location = /plugins/piwigo_privacy/get.php {
 		try_files  $uri =404;
 		fastcgi_pass unix:/run/php-fpm/www.sock;
