@@ -50,12 +50,10 @@ if ( !$img_id || !$req_path ) {
 	pwg_privacy_reject_access('Could not find image id or path');
 }
 
-$req_path = pwg_privacy_sanitize_path(PHPWG_ROOT_PATH, $req_path);
+$req_path = pwg_privacy_sanitize_path($req_path);
 if (!$req_path) {
 	pwg_privacy_reject_access('Could not sanitize path');
 }
-
-$req_path = './' . $req_path;
 
 $path = pwg_privacy_verify_access($img_id, $req_path);
 

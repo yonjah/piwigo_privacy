@@ -484,18 +484,15 @@ function pwg_privacy_url_to_size($s) {
 	return array((int)substr($s,0,$pos), (int)substr($s,$pos+1));
 }
 
-
-function pwg_privacy_sanitize_path($base, $path) {
+function pwg_privacy_sanitize_path($path) {
+	if ( preg_match('/\s|\.\./', $path) ) {
+		return pwg_privacy_error('Path cannot contain .. or white spaces ' . $path);
+	}
 	$path = str_replace('//', '/', $path);
 	$path = str_replace('/./', '/', $path);
 	$path = ltrim($path, '/');
-	$name = basename($path);
-	$path = realpath(dirname($base.$path));
-	$base = realpath($base) . '/';
-
-	if (strpos($path, $base) !== 0) {
-		return pwg_privacy_error('Requested path is outside piwigo base ' . $path);
+	if ( substr($path, 0, 2) !== './') {
+		$path = './' . $path;
 	}
-
-	return substr($path, strlen($base)).'/'.$name;
+	return $path;
 }
