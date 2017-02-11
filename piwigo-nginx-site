@@ -58,7 +58,7 @@ server {
 		include fastcgi_params;
 	}
 
-	location /i.php {
+	location = /i.php {
 		deny all;
 	}
 
