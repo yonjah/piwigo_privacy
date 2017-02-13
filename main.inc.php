@@ -2,10 +2,10 @@
 /*
 Version: 0.1.0
 Plugin Name: piwigo_privacy
-Plugin URI: // Here comes a link to the Piwigo extension gallery, after
-           // publication of your plugin. For auto-updates of the plugin.
+Plugin URI: http://piwigo.org/ext/extension_view.php?eid=849
 Author: Yoni Jah
-Description: Make sure only secure access is allowed to your gallery images https://github.com/yonjah/piwigo-privacy
+Description: Make sure only secure access is allowed to your gallery images
+Author URI: https://github.com/yonjah/piwigo_privacy
 */
 
 // Chech whether we are indeed included by Piwigo.
