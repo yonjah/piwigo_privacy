@@ -1,8 +1,8 @@
 server {
 	listen 127.0.0.1:80;
 	server_name piwigo.localhost;
-
 	root /var/www/piwigo;
+
 	index index.html index.htm index.php;
 
 	access_log /var/log/nginx/piwigo.access.log;
@@ -13,41 +13,70 @@ server {
 		try_files $uri $uri/ =404;
 	}
 
+	#### Extra Security blocks not necessary for the plugin, just some added security ####
+	location ~  \.inc\.php$ {
+		deny all;
+	}
+
+	location ~  ^/(include|install|local|tools|admin/include|admin/themes|plugins|upload|themes|galleries|_data|doc|language|template-extension)/.*\.php$ {
+		deny all;
+	}
+
+    location ~ /\. {
+        access_log off;
+        log_not_found off;
+        deny all;
+    }
+    #### End of extra security block ####
+
 	location ~ \.php$ {
 		try_files  $uri =404;
-		fastcgi_pass unix:/var/run/php5-fpm.sock;
+		fastcgi_pass unix:/run/php-fpm/www.sock;
 		fastcgi_index  index.php;
 		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
 		fastcgi_param  SCRIPT_NAME  $fastcgi_script_name;
 		include fastcgi_params;
 	}
 
-	# ============== actual Auth conf starts here =====================
-	location = /auth.php {
-		fastcgi_pass unix:/var/run/php5-fpm.sock;
-		fastcgi_index  auth.php;
+	location ~ ^/\d+/ {
+		set $script '/plugins/piwigo_privacy/get.php';
+		fastcgi_pass unix:/run/php-fpm/www.sock;
+		fastcgi_index  get.php;
+		fastcgi_param  SCRIPT_FILENAME  $document_root$script;
+		fastcgi_param  SCRIPT_NAME      $script;
+		include fastcgi_params;
+	}
+
+	# explicitly allow piwigo_privacy get.php you don't need this rule in advance mode or if you are not
+	# using the extra security blocks which block all direct access to php files in plugins
+	location = /plugins/piwigo_privacy/get.php {
+		try_files  $uri =404;
+		fastcgi_pass unix:/run/php-fpm/www.sock;
+		fastcgi_index  index.php;
 		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
 		fastcgi_param  SCRIPT_NAME  $fastcgi_script_name;
 		include fastcgi_params;
 	}
 
+	location = /i.php {
+		deny all;
+	}
 
 	location /upload {
-		auth_request /auth.php;
-		auth_request_set $auth_redirect '/default.png';
-			error_page 401 = /auth_401;
+		internal;
+
 	}
 
-	location /_data/i {
-		auth_request /auth.php;
-		auth_request_set $auth_redirect '/default.png';
-			error_page 401 = /auth_401;
+	location /galleries {
+		internal;
+
 	}
 
-	location = /auth_401 {
-		if ($auth_redirect) {
-			return 302 $auth_redirect;
-		}
-		return 401;
+	location /_data {
+		internal;
+	}
+
+	location /_data/combined {
+		try_files $uri $uri/ =404;
 	}
 }
