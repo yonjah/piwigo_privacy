@@ -22,12 +22,12 @@ server {
 		deny all;
 	}
 
-    location ~ /\. {
-        access_log off;
-        log_not_found off;
-        deny all;
-    }
-    #### End of extra security block ####
+	location ~ /\. {
+		access_log off;
+		log_not_found off;
+		deny all;
+	}
+	#### End of extra security block ####
 
 	location ~ \.php$ {
 		try_files  $uri =404;
@@ -64,12 +64,10 @@ server {
 
 	location /upload {
 		internal;
-
 	}
 
 	location /galleries {
 		internal;
-
 	}
 
 	location /_data {
