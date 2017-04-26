@@ -50,6 +50,11 @@ if ( !$img_id || !$req_path ) {
 	pwg_privacy_reject_access('Could not find image id or path');
 }
 
+
+if (strpos($req_path, 'i.php?') === 0) {
+	$req_path = PWG_DERIVATIVE_DIR . substr($req_path, 6);
+}
+
 $req_path = pwg_privacy_sanitize_path($req_path);
 if (!$req_path) {
 	pwg_privacy_reject_access('Could not sanitize path');
