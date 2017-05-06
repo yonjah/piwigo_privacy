@@ -68,12 +68,12 @@ function pwg_privacy_serve_file ($path) {
 			$mime='image/jpeg';
 			break;
 		case 'gif': case 'png':
-			$mime="image/"+$ext;
+			$mime="image/$ext";
 			break;
 		case 'wmv': case 'mov': case 'mkv': case 'mp4': case 'mpg': case 'flv': case 'asf':
 		case 'xvid': case 'divx': case 'mpeg': case 'avi': case 'rm': case 'm4v': case 'ogg':
 		case 'ogv': case 'webm': case 'webmv':
-			$mime="video/"+$ext;
+			$mime="video/$ext";
 			$range_support=true;
 			break;
 		default: $mime='application/octet-stream';
