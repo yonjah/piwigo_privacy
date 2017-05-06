@@ -19,7 +19,7 @@
 // | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, |
 // | USA.                                                                  |
 // +-----------------------------------------------------------------------+
-ini_set("log_errors", 1);
+ini_set('log_errors', 1);
 define('PHPWG_ROOT_PATH','./');
 session_cache_limiter('public');
 include_once(PHPWG_ROOT_PATH.'include/common.inc.php');

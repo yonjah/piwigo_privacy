@@ -64,10 +64,10 @@ function pwg_privacy_serve_file ($path) {
 
 	$ext = strtolower($ext);
 	switch ($ext) {
-		case "jpe": case "jpeg": case "jpg":
-			$mime="image/jpeg";
+		case 'jpe': case 'jpeg': case 'jpg':
+			$mime='image/jpeg';
 			break;
-		case "gif": case "png":
+		case 'gif': case 'png':
 			$mime="image/"+$ext;
 			break;
 		case 'wmv': case 'mov': case 'mkv': case 'mp4': case 'mpg': case 'flv': case 'asf':
@@ -76,7 +76,7 @@ function pwg_privacy_serve_file ($path) {
 			$mime="video/"+$ext;
 			$range_support=true;
 			break;
-		default: $mime="application/octet-stream";
+		default: $mime='application/octet-stream';
 	}
 
 	if (isset($conf['piwigo_privacy_redirect_header'])) {
@@ -118,7 +118,7 @@ function pwg_privacy_serve_range($file, $mime) {
 
 	header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fstat['mtime']).' GMT');
 	header('Content-type: '.$mime);
-	header("Accept-Ranges: bytes");
+	header('Accept-Ranges: bytes');
 
 	if ( isset($_SERVER['HTTP_RANGE']) ) {
 		$c_start = $start;
@@ -151,7 +151,7 @@ function pwg_privacy_serve_range($file, $mime) {
 	}
 
 	header("Content-Range: bytes $start-$end/$size");
-	header("Content-Length: ".$length);
+	header("Content-Length: $length");
 
 
 	// set_time_limit(0);
