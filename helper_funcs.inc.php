@@ -171,6 +171,7 @@ function pwg_privacy_serve_range($file, $mime) {
 
 
 function pwg_privacy_verify_access ($img_id, $req_path) {
+	global $user;
 	check_status(ACCESS_GUEST);
 
 	$query='
