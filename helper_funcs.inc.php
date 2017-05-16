@@ -210,6 +210,11 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 
 	//file is original uploaded image
 	if ( strpos($req_path, $path) === 0 ) {
+		//file is a video, serve it.
+		if ( strpos($path, '.mp4') !== 0 ) {
+			return $path;
+		}
+
 		if ($user['enabled_high']) {
 			return $path;
 		}
