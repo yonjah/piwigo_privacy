@@ -55,6 +55,7 @@ function pwg_privacy_serve_file ($path) {
 	global $conf;
 
 	$ext = get_extension($path);
+	$ext = strtolower($ext);
 
 	if (!in_array($ext, $conf['file_ext'])) {
 		pwg_privacy_reject_access('File extension is not allowed');
@@ -62,7 +63,6 @@ function pwg_privacy_serve_file ($path) {
 
 	$range_support = false;
 
-	$ext = strtolower($ext);
 	switch ($ext) {
 		case 'jpe': case 'jpeg': case 'jpg':
 			$mime='image/jpeg';
