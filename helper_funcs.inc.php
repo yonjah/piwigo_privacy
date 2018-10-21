@@ -242,7 +242,7 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 		return pwg_privacy_generate_derivative($element_info, $req_path);
 	}
 
-	return pwg_privacy_error("Could not validate path ($req_path) actually belong to image ($img_id)");
+	return pwg_privacy_error("Could not validate path ($req_path) actually belong to image ($img_id) ($base_file)");
 }
 
 
@@ -487,9 +487,12 @@ function pwg_privacy_url_to_size($s) {
 	return array((int)substr($s,0,$pos), (int)substr($s,$pos+1));
 }
 
-function pwg_privacy_sanitize_path($path) {
-	if ( preg_match('/\s|\.\./', $path) ) {
-		return pwg_privacy_error('Path cannot contain .. or white spaces ' . $path);
+function pwg_privacy_sanitize_path($path, $allow_whitespaces) {
+	if ( preg_match('/\.\./', $path) ) {
+		return pwg_privacy_error('Path cannot contain ..' . $path);
+	}
+	if (!$allow_whitespaces && preg_match('/\s/', $path)) {
+		return pwg_privacy_error('Path cannot white spaces' . $path);
 	}
 	$path = str_replace('//', '/', $path);
 	$path = str_replace('/./', '/', $path);

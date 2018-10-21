@@ -39,7 +39,7 @@ if (isset($conf['piwigo_privacy_redirect_header'])) {
 	if (!is_numeric($img_id) && $img_id == (int)$img_id ) {
 		pwg_privacy_reject_access("Image id '$img_id' is not numeric $full_path");
 	}
-
+	$req_path = urldecode($req_path);
 } else {
 	$img_id = filter_input(INPUT_GET, 'img_id', FILTER_VALIDATE_INT);
 	$req_path = filter_input(INPUT_GET, 'file', FILTER_SANITIZE_URL);
@@ -55,7 +55,7 @@ if (strpos($req_path, 'i.php?') === 0) {
 	$req_path = PWG_DERIVATIVE_DIR . substr($req_path, 6);
 }
 
-$req_path = pwg_privacy_sanitize_path($req_path);
+$req_path = pwg_privacy_sanitize_path($req_path, isset($conf['piwigo_privacy_allow_whitespaces']) && $conf['piwigo_privacy_allow_whitespaces'] === true);
 if (!$req_path) {
 	pwg_privacy_reject_access('Could not sanitize path');
 }

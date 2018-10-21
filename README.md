@@ -8,7 +8,7 @@ It has two modes of operations
 - Naive - all images are directed to `get.php` where access is analyzed derivative are created and files are served
 - Advanced - Using a custom web server configuration (see [piwigo-nginx-site](piwigo-nginx-site) for NGINX sample) `get.php` will validate files and create derivative but will pass the actual serving of files to the web server.
 
-*Notice* that with both modes you need to make sure your static file folders are blocked from public web access 
+*Notice* that with both modes you need to make sure your static file folders are blocked from public web access
 You should also disable `i.php` script since it sends files back to the client without validating the permissions.
 You can look at [piwigo-nginx-site](piwigo-nginx-site) which does all of that.
 
@@ -29,6 +29,17 @@ $conf['piwigo_privacy_redirect_header'] = 'X-Accel-Redirect';
 ```
 
 Using a different server that supports `X-send-files` might be possible by settings the headers accordingly but this plugin was only tested with NGINX. if you get it to work with other servers a pull request with a sample configuration would be appreciated.
+
+If your file names or paths contain spaces you might need to allow whitespace in file names
+
+_Please Note_ that some web apps might be volnurabe to code and command injections by passing weird formatted file names
+I am currently not aware of any such vulnerabilities in this plugin or in piwigo but allowing whitespaces might increase
+the likelihood of such attack (so only enable this config if the plugin is blocking access to such images where it shouldn't)
+
+```php
+$conf['piwigo_privacy_allow_whitespaces'] = true;
+```
+
 
 ## Disclaimer
 This plugin is a lot more complex than my initial implementation.
