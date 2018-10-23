@@ -8,7 +8,7 @@ Description: Make sure only secure access is allowed to your gallery images
 Author URI: https://github.com/yonjah/piwigo_privacy
 */
 
-// Chech whether we are indeed included by Piwigo.
+// Check whether we are indeed included by Piwigo.
 if (!defined('PHPWG_ROOT_PATH')) die('Hacking attempt!');
 global $conf;
 
