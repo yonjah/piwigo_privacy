@@ -42,7 +42,7 @@ if (isset($conf['piwigo_privacy_redirect_header'])) {
 	$req_path = urldecode($req_path);
 } else {
 	$img_id = filter_input(INPUT_GET, 'img_id', FILTER_VALIDATE_INT);
-	$req_path = filter_input(INPUT_GET, 'file', FILTER_SANITIZE_URL);
+	$req_path = filter_input(INPUT_GET, 'file', FILTER_UNSAFE_RAW);
 }
 
 //reject access if no id or path
@@ -50,12 +50,14 @@ if ( !$img_id || !$req_path ) {
 	pwg_privacy_reject_access('Could not find image id or path');
 }
 
-
 if (strpos($req_path, 'i.php?') === 0) {
 	$req_path = PWG_DERIVATIVE_DIR . substr($req_path, 6);
 }
 
-$req_path = pwg_privacy_sanitize_path($req_path, isset($conf['piwigo_privacy_allow_whitespaces']) && $conf['piwigo_privacy_allow_whitespaces'] === true);
+$allow_whitespaces = isset($conf['piwigo_privacy_allow_whitespaces']) && $conf['piwigo_privacy_allow_whitespaces'] === true;
+$allow_special_chars = isset($conf['piwigo_privacy_allow_special_chars']) && $conf['piwigo_privacy_allow_special_chars'] === true;
+
+$req_path = pwg_privacy_sanitize_path($req_path, $allow_whitespaces, $allow_special_chars);
 if (!$req_path) {
 	pwg_privacy_reject_access('Could not sanitize path');
 }

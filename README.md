@@ -30,16 +30,25 @@ $conf['piwigo_privacy_redirect_header'] = 'X-Accel-Redirect';
 
 Using a different server that supports `X-send-files` might be possible by settings the headers accordingly but this plugin was only tested with NGINX. if you get it to work with other servers a pull request with a sample configuration would be appreciated.
 
+
+### Less strict configuration
+On most Piwigo installs you'll never need to enable the following configs.
+This configs are only necessary if you imported your Piwigo gallery from a different system and your previous
+gallery contained paths with spaces or special chars.
+
+**Note** that some web apps might be vulnerable to code and command injections by passing weird formatted file names
+I am not aware of any such vulnerabilities in this plugin or in Piwigo but allowing whitespaces or special chars might increase
+the likelihood of such attack. (so only enable the following config options if some of your images fail to load properly)
+
 If your file names or paths contain spaces you might need to allow whitespace in file names
-
-_Please Note_ that some web apps might be volnurabe to code and command injections by passing weird formatted file names
-I am currently not aware of any such vulnerabilities in this plugin or in piwigo but allowing whitespaces might increase
-the likelihood of such attack (so only enable this config if the plugin is blocking access to such images where it shouldn't)
-
 ```php
 $conf['piwigo_privacy_allow_whitespaces'] = true;
 ```
 
+If your file names or paths contain special chars you'll need to allow special chars in file names
+```php
+$conf['piwigo_privacy_allow_special_chars'] = true;
+```
 
 ## Disclaimer
 This plugin is a lot more complex than my initial implementation.

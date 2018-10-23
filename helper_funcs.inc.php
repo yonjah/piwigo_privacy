@@ -487,13 +487,17 @@ function pwg_privacy_url_to_size($s) {
 	return array((int)substr($s,0,$pos), (int)substr($s,$pos+1));
 }
 
-function pwg_privacy_sanitize_path($path, $allow_whitespaces) {
+function pwg_privacy_sanitize_path($path, $allow_whitespaces, $allow_special_chars) {
 	if ( preg_match('/\.\./', $path) ) {
 		return pwg_privacy_error('Path cannot contain ..' . $path);
 	}
 	if (!$allow_whitespaces && preg_match('/\s/', $path)) {
-		return pwg_privacy_error('Path cannot white spaces' . $path);
+		return pwg_privacy_error('Path cannot contain white spaces' . $path);
 	}
+	if (!$allow_special_chars && preg_match('/[^a-zA-Z0-9_.\/\s-]/', $path, $matches)) {
+		return pwg_privacy_error("Path cannot contain special chars $path ({$matches[0]})");
+	}
+
 	$path = str_replace('//', '/', $path);
 	$path = str_replace('/./', '/', $path);
 	$path = ltrim($path, '/');
