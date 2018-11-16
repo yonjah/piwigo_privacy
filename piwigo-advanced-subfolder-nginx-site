@@ -1,0 +1,100 @@
+server {
+    # this example sees the piwigo server located in a sub folder on the webserver e.g. http://example.com/piwigo (like here), or http://example.com/my_gallery
+    # Advanced mode of this piwigo_privacy plugin is presumed.
+
+	listen 127.0.0.1:80;
+	server_name piwigo.localhost;
+	root /var/www/piwigo;
+
+	index index.html index.htm index.php;
+
+	access_log /var/log/nginx/piwigo.access.log;
+	error_log /var/log/nginx/piwigo.error.log ;
+
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+	location /piwigo {
+    		try_files $uri $uri/ =404;
+    	}
+
+	#### Extra Security blocks not necessary for the plugin, just some added security ####
+	location ~  \.inc\.php$ {
+		deny all;
+	}
+
+	location ~  ^/piwigo/(include|install|local|tools|admin/include|admin/themes|plugins|upload|themes|galleries|_data|doc|language|template-extension)/.*\.php$ {
+		deny all;
+	}
+
+	location ~ /\. {
+		access_log off;
+		log_not_found off;
+		deny all;
+	}
+	#### End of extra security block ####
+
+	location ~ \.php$ {
+		try_files  $uri =404;
+		# use the correct fastcgi_pass value here. it will vary depending on your linux install details. Neither may work for you... check and enter correct value.
+        #    fastcgi_pass unix:/run/php-fpm/www.sock;
+        fastcgi_pass 127.0.0.1:9000;
+		fastcgi_index  index.php;
+		include fastcgi_params;
+	}
+
+	location ~ (^/piwigo)(/\d+/.*) {
+        set $piwigo_app_root $1;
+        set $piwigo_internal_image_uri $2;
+        set $php_script_name '/piwigo/plugins/piwigo_privacy/get.php';
+        # use the correct fastcgi_pass value here. it will vary depending on your linux install details. Neither may work for you... check and enter correct value.
+        #    fastcgi_pass unix:/run/php-fpm/www.sock;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index  get.php;
+        include /etc/nginx/fastcgi_params;
+        # override the php script to that specifed above
+        fastcgi_param  SCRIPT_NAME $php_script_name;
+        fastcgi_param  SCRIPT_FILENAME $document_root$php_script_name;
+        # override the request uri to strip the piwigo app folder from the path
+        fastcgi_param  REQUEST_URI $piwigo_internal_image_uri;
+        # pass the piwigo app root so it can be appended to the resulting uri
+        fastcgi_param  APP_ROOT $piwigo_app_root;
+    }
+
+	# explicitly allow piwigo_privacy get.php you don't need this rule in advanced mode or if you are not
+    # using the extra security blocks which block all direct access to php files in plugins (hence it is commented out here)
+    #location = /piwigo/plugins/piwigo_privacy/get.php {
+    #    try_files  $uri =404;
+    #    fastcgi_pass unix:/run/php-fpm/www.sock;
+    #    fastcgi_index  index.php;
+    #    include /etc/nginx/fastcgi_params;
+    # these params may not be neded depening on what you have in your fastcgi_params file
+    #    fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+    #    fastcgi_param  SCRIPT_NAME  $fastcgi_script_name;
+    #}
+
+	location = /piwigo/i.php {
+		deny all;
+	}
+
+    # Allow access to files only via a php script (that checks user authorisation)
+	location /piwigo/upload {
+		internal;
+	}
+
+    # Allow access to files only via a php script (that checks user authorisation)
+	location /piwigo/galleries {
+		internal;
+	}
+
+    # Allow access to files only via a php script (that checks user authorisation)
+	location /piwigo/_data {
+		internal;
+	}
+
+	location /piwigo/_data/combined {
+		try_files $uri $uri/ =404;
+	}
+}
