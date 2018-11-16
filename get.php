@@ -30,6 +30,11 @@ defined('PWG_DERIVATIVE_DIR') or define('PWG_DERIVATIVE_DIR', $conf['data_locati
 
 global $conf;
 
+$app_path = filter_input(INPUT_SERVER, 'APP_ROOT', FILTER_SANITIZE_URL);
+if (!$app_path) {
+	pwg_privacy_reject_access('Could not get app root path on webserver (e.g. / or /piwigo or /my_gallery)');
+}
+
 if (isset($conf['piwigo_privacy_redirect_header'])) {
 	$full_path = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL);
 	if (!$full_path) {
@@ -68,4 +73,4 @@ if (!$path) {
 	pwg_privacy_reject_access('Access was rejected');
 }
 
-pwg_privacy_serve_file($path);
+pwg_privacy_serve_file($app_path."/".$path);
