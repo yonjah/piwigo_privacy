@@ -1,6 +1,6 @@
 <?php
 /*
-Version: 1.0.0
+Version: 1.0.1
 Plugin Name: piwigo_privacy
 Plugin URI: http://piwigo.org/ext/extension_view.php?eid=849
 Author: Yoni Jah
