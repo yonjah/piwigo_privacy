@@ -21,6 +21,33 @@ if ($conf['derivative_url_style'] !== 1) {
 	add_event_handler('picture_pictures_data', 'pwg_privacy_plugin_replace_picture');
 }
 
+/**
+* Allows us to replace the url (by changing rel_path) of an image without changing it's path
+**/
+class SrcImageProxy {
+	private $image;
+	private $orig_path;
+
+	public function __construct(SrcImage $image) {
+	    $this->image = $image;
+		$this->orig_path = $image->get_path();
+	}
+
+	public function __get($name) {
+	    return $this->image->$name;
+	}
+
+	public function __set($name, $value) {
+	    return $this->image->$name = $value;
+	}
+
+	public function __call($method, $args) {
+		if ($method === 'get_path') {
+			return $this->orig_path;
+		}
+		return call_user_func_array(array($this->image, $method), $args);
+	}
+}
 
 function pwg_privacy_plugin_replace_picture ($picture) {
 	foreach ($picture as $key => &$image) {
@@ -28,6 +55,7 @@ function pwg_privacy_plugin_replace_picture ($picture) {
 			$image['element_url'] = pwg_privacy_modify_url($image['element_url'], $image['id']);
 		}
 		if (isset($image['src_image'])) {
+			$image['src_image'] = new SrcImageProxy($image['src_image']);
 			$image['src_image']->rel_path = pwg_privacy_modify_url($image['src_image']->rel_path, $image['src_image']->id);
 		}
 	}
