@@ -68,4 +68,4 @@ if (!$path) {
 	pwg_privacy_reject_access('Access was rejected');
 }
 
-pwg_privacy_serve_file($path);
+pwg_privacy_serve_file(get_absolute_root_url(false).$path);
