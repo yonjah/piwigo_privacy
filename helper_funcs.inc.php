@@ -21,7 +21,8 @@
 // +-----------------------------------------------------------------------+
 function pwg_privacy_error($msg) {
 	global $conf;
-	if (isset($conf['piwigo_privacy_debug'])) {
+	if (isset($conf['piwigo_privacy_debug']) && $conf['piwigo_privacy_debug']) {
+	    // if set, we care about the value of this setting.
 		throw new Exception($msg);
 	}
 	return false;
