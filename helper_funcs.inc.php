@@ -76,6 +76,10 @@ function pwg_privacy_serve_file ($path) {
 			$mime="video/$ext";
 			$range_support=true;
 			break;
+		case 'm4a':
+		    $mime="audio/mp4";
+		    $range_support=true;
+		    break;
 		default: $mime='application/octet-stream';
 	}
 
