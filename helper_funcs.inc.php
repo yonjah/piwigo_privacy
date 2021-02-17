@@ -220,6 +220,8 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 		}
 		return pwg_privacy_error('User has no high res access ' . $img_id);
 	}
+	
+	
 
 	//file is a representative
 	if ( strpos($req_path, original_to_representative($path, '')) === 0 ) {
@@ -242,8 +244,30 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 		$element_info['path'] = get_filename_wo_extension(dirname($path).'/pwg_representative/'.basename($path)) . '.'. $element_info['representative_ext'];
 		return pwg_privacy_generate_derivative($element_info, $req_path);
 	}
-
+	
+	// is file an alternative format file?
+	if (pwg_privacy_is_alternate_format_file($path,$req_path)) {
+	    // this is a valid alternative format file.
+	    if ($user['enabled_high']) {
+	        return $req_path;
+	    }
+	    return pwg_privacy_error('User has no high res access ' . $img_id);
+	}
+	
 	return pwg_privacy_error("Could not validate path ($req_path) actually belong to image ($img_id) ($base_file)");
+}
+
+function pwg_privacy_is_alternate_format_file ($original_file_path, $req_path) {
+    // the the base path for the original file
+    $base_img_path = preg_replace('#(.*/)[^/]*\.[^.]*$#','$1',$original_file_path);
+    // get the filename without extension of the original file
+    $base_img_name = preg_replace('#.*/([^/]*)\.[^.]*$#','$1',$original_file_path);
+    // get the desired extension of the potential alternate format file
+    $wanted_ext = preg_replace('#.*\.([^.]*)$#','$1', $req_path);
+    // construct what would be a valid path for an alternative format file for this resource
+    $valid_format_path = $base_img_path.'pwg_format/'.$base_img_name.'.'.$wanted_ext;
+    // check if the valid path matches the requested path
+    return $valid_format_path == $req_path;
 }
 
 
