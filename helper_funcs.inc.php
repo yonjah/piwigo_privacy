@@ -136,13 +136,14 @@ function pwg_privacy_serve_file ($req_path) {
 	$mime_type = pwg_privacy_get_mime_type($relative_file_path);
 
 	// send a http redirect to the actual file (we've authenticated access - allow the webserver to serve the file as its more performant)
-		if (isset($conf['piwigo_privacy_redirect_header'])) {
-		$new_path =  str_replace('/./', '/', $req_path);
-				header('Content-type: '.$mime_type);
-		$redirect_to = get_absolute_root_url(false).$new_path;
-				header("{$conf['piwigo_privacy_redirect_header']}: {$redirect_to}");
-		return;
-		}
+    if (isset($conf['piwigo_privacy_redirect_header'])) {
+        header('Content-type: '.$mime_type);
+        $redirect_to = get_absolute_root_url(false).$req_path;
+        $redirect_to =  str_replace('/./', '/', $redirect_to);
+        header("{$conf['piwigo_privacy_redirect_header']}: {$redirect_to}");
+        return;
+    }
+	
 
 	// If we got here, we're going to serve the file ourselves (NOTE this is MUCH slower than allowing the webserver to do it).
 	$range_support = pwg_privacy_support_http_range($relative_file_path, $mime_type);
