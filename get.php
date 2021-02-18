@@ -2,7 +2,7 @@
 // +-----------------------------------------------------------------------+
 // | Piwigo-Privacy - keep your piwigo content private                     |
 // +-----------------------------------------------------------------------+
-// | Copyright(C) 2017 Yoni jah                                             |
+// | Copyright(C) 2017 Yoni jah                                            |
 // | Based on action.php file from Piwigo gallery                          |
 // +-----------------------------------------------------------------------+
 // | This program is free software; you can redistribute it and/or modify  |
@@ -29,6 +29,7 @@ include_once('./helper_funcs.inc.php');
 defined('PWG_DERIVATIVE_DIR') or define('PWG_DERIVATIVE_DIR', $conf['data_location'].'i/');
 
 global $conf;
+
 
 if (isset($conf['piwigo_privacy_redirect_header'])) {
 	$full_path = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL);
@@ -67,5 +68,4 @@ $path = pwg_privacy_verify_access($img_id, $req_path);
 if (!$path) {
 	pwg_privacy_reject_access('Access was rejected');
 }
-
 pwg_privacy_serve_file($path);

@@ -2,8 +2,8 @@
 // +-----------------------------------------------------------------------+
 // | Piwigo-Privacy - keep your piwigo content private                     |
 // +-----------------------------------------------------------------------+
-// | Copyright(C) 2017 Yoni jah                                             |
-// | Based on action.php and i.php file from Piwigo gallery                          |
+// | Copyright(C) 2017 Yoni jah                                            |
+// | Based on action.php file from Piwigo gallery                          |
 // +-----------------------------------------------------------------------+
 // | This program is free software; you can redistribute it and/or modify  |
 // | it under the terms of the GNU General Public License as published by  |
@@ -19,9 +19,10 @@
 // | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, |
 // | USA.                                                                  |
 // +-----------------------------------------------------------------------+
+
 function pwg_privacy_error($msg) {
 	global $conf;
-	if (isset($conf['piwigo_privacy_debug'])) {
+	if (isset($conf['piwigo_privacy_debug']) && $conf['piwigo_privacy_debug']) {
 		throw new Exception($msg);
 	}
 	return false;
@@ -29,6 +30,7 @@ function pwg_privacy_error($msg) {
 
 function pwg_privacy_do_error( $code, $str ) {
 	error_log($code . ' '.  $str . ' ' . filter_input(INPUT_SERVER, 'REMOTE_ADDR'));
+		header('Content-type: text/html');
 	set_status_header( $code );
 	echo $str ;
 	exit();
@@ -51,60 +53,131 @@ function pwg_privacy_reject_access ($msg) {
 	exit();
 }
 
-function pwg_privacy_serve_file ($path) {
+function pwg_privacy_get_mime_type($file_path) {
+    // retrieve the mime type for the file. This is based on code found on php.net
+	$arrayZips = array("application/zip", "application/x-zip", "application/x-zip-compressed");
+
+	$arrayExtensions = array(".pptx", ".docx", ".dotx", ".xlsx");
+
+	$original_extension = (false === $pos = strrpos($file_path, '.')) ? '' : substr($file_path, $pos);
+
+	$finfo = new finfo(FILEINFO_MIME);
+
+	$type = $finfo->file($file_path);
+
+	if (in_array($type, $arrayZips) && in_array($original_extension, $arrayExtensions))
+	{
+		return $original_extension;
+	}
+	// strip the charset encoding part
+	$type = preg_replace('#^([a-zA-Z*]*/[a-zA-Z*]*).*$#','$1',$type);
+	return $type;
+}
+
+// for any mime type - e.g. image/jpeg or audio/mp3 will return image or audio respectively.
+function pwg_privacy_get_mime_group($mime_type) {
+	$mime_group = substr($mime_type, 0, strpos($mime_type, '/'));
+	return $mime_group;
+}
+
+function pwg_privacy_tidy_path($path) {
+
+	// If relative path, remove that.
+	if(strpos($path,'./') == 0) {
+		$path = substr($path,1);
+	}
+	// prepend the relative path from this file to the base of the served content
+	$path = PHPWG_ROOT_PATH.$path;
+	// remove unnecessary / from the path (if was relative path will be the case, maybe others?).
+	$path = str_replace('//','/',$path);
+	// remove weird mid-path corruption.
+	$path = str_replace('/./','/',$path);
+	return $path;
+}
+
+function pwg_privacy_support_http_range($path, $mime_type) {
+
+	$range_support = false;
+
+	$max_size_without_range_offer = 1024 * 1024 * 8; //any files over 8MB by default will be served with a range offering
+	if (isset($conf['piwigo_privacy_max_size_no_range_support'])) {
+	   $max_size_without_range_offer = $conf['piwigo_privacy_max_size_no_range_support'];
+	}
+
+	$mime_group = pwg_privacy_get_mime_group($mime_type);
+
+		if($mime_group != 'image') {
+		//  any non image files automatically are range supported
+		$range_support = true;
+		}
+
+		if(pwg_privacy_get_file_size($path) > $max_size_without_range_offer) {
+		// any large files are automatically range supported
+		$range_support = true;
+		}
+
+	return $range_support;
+}
+
+function pwg_privacy_serve_file ($req_path) {
 	global $conf;
 
-	$ext = get_extension($path);
+	$ext = get_extension($req_path);
 	$ext = strtolower($ext);
+
+	// get a valid path to the actual filesystem file requested
+	$relative_file_path = pwg_privacy_tidy_path($req_path);
 
 	if (!in_array($ext, $conf['file_ext'])) {
 		pwg_privacy_reject_access('File extension is not allowed');
 	}
 
-	$range_support = false;
+	// retrieve the mime type information for the file by the best method possible
+	$mime_type = pwg_privacy_get_mime_type($relative_file_path);
 
-	switch ($ext) {
-		case 'jpe': case 'jpeg': case 'jpg':
-			$mime='image/jpeg';
-			break;
-		case 'gif': case 'png':
-			$mime="image/$ext";
-			break;
-		case 'wmv': case 'mov': case 'mkv': case 'mp4': case 'mpg': case 'flv': case 'asf':
-		case 'xvid': case 'divx': case 'mpeg': case 'avi': case 'rm': case 'm4v': case 'ogg':
-		case 'ogv': case 'webm': case 'webmv':
-			$mime="video/$ext";
-			$range_support=true;
-			break;
-		default: $mime='application/octet-stream';
-	}
+	// send a http redirect to the actual file (we've authenticated access - allow the webserver to serve the file as its more performant)
+    if (isset($conf['piwigo_privacy_redirect_header'])) {
+        header('Content-type: '.$mime_type);
+        $redirect_to = get_absolute_root_url(false).$req_path;
+        $redirect_to =  str_replace('/./', '/', $redirect_to);
+        header("{$conf['piwigo_privacy_redirect_header']}: {$redirect_to}");
+        return;
+    }
+	
 
-	if (isset($conf['piwigo_privacy_redirect_header'])) {
-		header('Content-type: '.$mime);
-		$path =  str_replace('/./', '/', '/' . $path);
-
-		header("{$conf['piwigo_privacy_redirect_header']}: /{$path}");
-		return;
-	}
-
-	$path = PHPWG_ROOT_PATH.$path;
+	// If we got here, we're going to serve the file ourselves (NOTE this is MUCH slower than allowing the webserver to do it).
+	$range_support = pwg_privacy_support_http_range($relative_file_path, $mime_type);
 
 	if ($range_support) {
-		return pwg_privacy_serve_range($path, $mime);
+		return pwg_privacy_serve_range($relative_file_path, $mime_type);
+	} else {
+		return pwg_privacy_serve_complete_file($relative_file_path, $mime_type);
 	}
-	$fp = fopen($path, 'rb');
-
-	$fstat = fstat($fp);
-	header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fstat['mtime']).' GMT');
-	header('Content-length: '.$fstat['size']);
-	header('Connection: close');
-	header('Content-type: '.$mime);
-
-	fpassthru($fp);
-	fclose($fp);
-	exit();
 }
 
+function pwg_privacy_get_file_size($path) {
+	try {
+		$fp = fopen($path, 'rb');
+		$fstat = fstat($fp);
+		return $fstat['size'];
+	} finally {
+		fclose($fp);
+	}
+}
+
+function pwg_privacy_serve_complete_file($path, $mime) {
+	$fp = fopen($path, 'rb');
+
+		$fstat = fstat($fp);
+		header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fstat['mtime']).' GMT');
+		header('Content-length: '.$fstat['size']);
+		header('Connection: close');
+		header('Content-type: '.$mime);
+
+		fpassthru($fp);
+	fclose($fp);
+		exit();
+}
 
 function pwg_privacy_serve_range($file, $mime) {
 	//from https://gist.github.com/codler/3906826 with some minor modifications
@@ -112,9 +185,9 @@ function pwg_privacy_serve_range($file, $mime) {
 	$fstat = fstat($fp);
 
 	$size   = $fstat['size']; // File size
-	$length = $size;           // Content length
-	$start  = 0;               // Start byte
-	$end    = $size - 1;       // End byte
+	$length = $size;		   // Content length
+	$start  = 0;			   // Start byte
+	$end	= $size - 1;	   // End byte
 
 	header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fstat['mtime']).' GMT');
 	header('Content-type: '.$mime);
@@ -144,7 +217,7 @@ function pwg_privacy_serve_range($file, $mime) {
 			exit;
 		}
 		$start  = $c_start;
-		$end    = $c_end;
+		$end	= $c_end;
 		$length = $end - $start + 1;
 		fseek($fp, $start);
 		header('HTTP/1.1 206 Partial Content');
@@ -185,7 +258,7 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 			'forbidden_categories' => 'category_id',
 			'forbidden_images' => 'image_id',
 		),
-		'    AND'
+		'	AND'
 		).'
 		LIMIT 1
 	;';
@@ -242,9 +315,29 @@ function pwg_privacy_verify_access ($img_id, $req_path) {
 		return pwg_privacy_generate_derivative($element_info, $req_path);
 	}
 
+		if (pwg_privacy_is_alternate_format_file($path,$req_path)) {
+		// this is a valid alternative format file.
+		if ($user['enabled_high']) {
+			return $req_path;
+		}
+		return pwg_privacy_error('User has no high res access ' . $img_id);
+	}
+
 	return pwg_privacy_error("Could not validate path ($req_path) actually belong to image ($img_id) ($base_file)");
 }
 
+function pwg_privacy_is_alternate_format_file ($original_file_path, $req_path) {
+	// the the base path for the original file
+	$base_img_path = preg_replace('#(.*/)[^/]*\.[^.]*$#','$1',$original_file_path);
+	// get the filename without extension of the original file
+	$base_img_name = preg_replace('#.*/([^/]*)\.[^.]*$#','$1',$original_file_path);
+	// get the desired extension of the potential alternate format file
+	$wanted_ext = preg_replace('#.*\.([^.]*)$#','$1', $req_path);
+	// construct what would be a valid path for an alternative format file for this resource
+	$valid_format_path = $base_img_path.'pwg_format/'.$base_img_name.'.'.$wanted_ext;
+	// check if the valid path matches the requested path
+	return $valid_format_path == $req_path;
+}
 
 /**
  * Make sure derivative exists and return it's path

@@ -1,0 +1,79 @@
+# This file is set up to serve the piwigo server in a subfolder 'piwigo' on your webserver.
+
+server {
+	listen 127.0.0.1:80;
+	server_name piwigo.localhost;
+	root /var/www;
+
+	index index.html index.htm index.php;
+
+	access_log /var/log/nginx/piwigo.access.log;
+	error_log /var/log/nginx/piwigo.error.log ;
+
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+	
+	location /piwigo {
+		try_files $uri $uri/ =404;
+	}
+
+
+	#### Extra Security blocks not necessary for the plugin, just some added security ####
+	location ~  \.inc\.php$ {
+		deny all;
+	}
+
+	location ~  ^/piwigo/(include|install|local|tools|admin/include|admin/themes|plugins|upload|themes|galleries|_data|doc|language|template-extension)/.*\.php$ {
+		deny all;
+	}
+
+	location ~ /\. {
+		access_log off;
+		log_not_found off;
+		deny all;
+	}
+	#### End of extra security block ####
+
+	location ~ \.php$ {
+		try_files  $uri =404;
+		fastcgi_pass unix:/run/php-fpm/www.sock;
+		fastcgi_index  index.php;
+		include /etc/nginx/fastcgi_params;
+	}
+
+	location ~ ^/piwigo(/\d+/.*) {
+		set $piwigo_internal_image_uri $1;
+		set $php_script_name '/piwigo/plugins/piwigo_privacy/get.php';
+		fastcgi_pass unix:/run/php-fpm/www.sock;
+		fastcgi_index get.php;
+		include /etc/nginx/fastcgi_params;
+		# overwrite these params from those set in the fastcgi_params file referenced so our script gets called
+		fastcgi_param SCRIPT_FILENAME $document_root$php_script_name;
+		fastcgi_param SCRIPT_NAME $php_script_name;
+		fastcgi_param REQUEST_URI $piwigo_internal_image_uri;
+	}
+
+	location = /piwigo/i.php {
+		deny all;
+	}
+
+	location /piwigo/upload {
+		internal;
+	}
+
+	location /piwigo/galleries {
+		internal;
+	}
+
+	location /piwigo/_data {
+		internal;
+	}
+
+	location /piwigo/_data/combined {
+		try_files $uri $uri/ =404;
+	}
+
+}
+
