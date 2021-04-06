@@ -91,5 +91,11 @@ function pwg_privacy_modify_url($url, $id) {
 		$url = substr($url, strlen($root_url));
 		return trim($root_url, '/') . '/' . $image_prefix . trim($url, '/');
 	}
+	
+	// we already have image_prefix at the beginning and will not add it a second time
+	if (strpos($url, $image_prefix) === 0) {
+		return trim($url, '/');
+	}
+	
 	return $image_prefix . trim($url, '/');
 }
