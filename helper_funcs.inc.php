@@ -76,6 +76,10 @@ function pwg_privacy_serve_file ($path) {
 			$mime="video/$ext";
 			$range_support=true;
 			break;
+		case 'pdf':
+			$mime='application/pdf';
+			$range_support=true;
+			break;
 		default: $mime='application/octet-stream';
 	}
 
