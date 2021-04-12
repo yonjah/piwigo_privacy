@@ -62,19 +62,49 @@ server {
 		deny all;
 	}
 
-	location /upload {
+	location ^~ /upload {
 		internal;
 	}
 
-	location /galleries {
+	location ^~ /galleries {
 		internal;
 	}
 
-	location /_data {
+	location ^~ /_data {
 		internal;
 	}
 
 	location /_data/combined {
+		try_files $uri $uri/ =404;
+	}
+	
+	# Various additional fixes if the extra security blocks above are used.
+	
+	# Enable the "Display reference file" link of the LocalFiles Editor plugin
+	location = /plugins/LocalFilesEditor/show_default.php {
+		try_files  $uri =404;
+		fastcgi_pass unix:/run/php-fpm/www.sock;
+		fastcgi_index  index.php;
+		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		fastcgi_param  SCRIPT_NAME  $fastcgi_script_name;
+		include fastcgi_params;
+	}
+		
+	# Enable exif metadata testing using /tools/metadata.php as described in
+	# https://piwigo.org/doc/doku.php?id=user_documentation:metadata
+	# Alternatively use the read_metadata plugin
+	location = /tools/metadata.php {
+		try_files  $uri =404;
+		fastcgi_pass unix:/run/php-fpm/www.sock;
+		fastcgi_index  index.php;
+		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		fastcgi_param  SCRIPT_NAME  $fastcgi_script_name;
+		include fastcgi_params;
+	}
+	
+	# Enable the letsencrypt "webroot installation" verification step
+	# as used for example by the openmediavault letsencrypt plugin
+	location ^~ /.well-known/acme-challenge {
 		try_files $uri $uri/ =404;
 	}
 }
