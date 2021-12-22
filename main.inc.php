@@ -6,6 +6,7 @@ Plugin URI: http://piwigo.org/ext/extension_view.php?eid=849
 Author: Yoni Jah
 Description: Make sure only secure access is allowed to your gallery images
 Author URI: https://github.com/yonjah/piwigo_privacy
+Has Settings: false
 */
 
 // Check whether we are indeed included by Piwigo.
